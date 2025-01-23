@@ -1,6 +1,7 @@
 import React from 'react';
+import { useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, useHistory } from 'react-router-dom';
 import { ApolloClient, ApolloProvider, createHttpLink, InMemoryCache, ServerError } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -13,6 +14,7 @@ import possibleTypesResult from './possibleTypes.generated';
 import { ErrorCodes } from './app/shared/constants';
 import CustomThemeProvider from './CustomThemeProvider';
 import { useCustomTheme } from './customThemeContext';
+import Chatbot from './Chatbot'
 
 /*
     Construct Apollo Client
@@ -75,11 +77,35 @@ const client = new ApolloClient({
 });
 
 export const InnerApp: React.VFC = () => {
+    const history = useHistory();
+
+    // Add the global click listener
+    useEffect(() => {
+        const handleLinkClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+
+            if (target.tagName === 'A') {
+                const href = (target as HTMLAnchorElement).getAttribute('href');
+                if (href && href.startsWith('/')) {
+                    event.preventDefault(); // Prevent default navigation
+                    history.push(href); // Use React Router's navigation
+                }
+            }
+        };
+
+        document.addEventListener('click', handleLinkClick);
+
+        // Cleanup on unmount
+        return () => {
+            document.removeEventListener('click', handleLinkClick);
+        };
+    }, [history]);
+
     return (
         <HelmetProvider>
             <CustomThemeProvider>
                 <Helmet>
-                    <title>{useCustomTheme().theme?.content?.title}</title>
+                    <title>{useCustomTheme().theme?.content.title}</title>
                 </Helmet>
                 <Router>
                     <Routes />
@@ -93,6 +119,7 @@ export const App: React.VFC = () => {
     return (
         <ApolloProvider client={client}>
             <InnerApp />
+            <Chatbot />
         </ApolloProvider>
     );
 };

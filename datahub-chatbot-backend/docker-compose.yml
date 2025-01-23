@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9003:9003"
+    # env_file: datahub-backend/env/docker.env
+    environment:
+      - FRONTEND_API_TOKEN=${FRONTEND_API_TOKEN}
+      - LANGFLOW_API_ENDPOINT=${LANGFLOW_API_ENDPOINT}
+      - LANGFLOW_API_TOKEN=${LANGFLOW_API_TOKEN}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL}
+      - PORT=9003
+    volumes:
+      - .:/app
+    restart: unless-stopped 
